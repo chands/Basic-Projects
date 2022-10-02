@@ -1,6 +1,9 @@
 const canvas = document.getElementById("canvasPlayground");
 const CTX = canvas.getContext('2d');
 
+let gameOn = true;
+let crash  = false;
+
 //Draw the game component.
 class Box {
     constructor(size, color) {
@@ -71,6 +74,39 @@ function drawBox(box) {
     CTX.fillRect(box.x, box.y, box.size, box.size);
 }
 
+//detect collision:
+function isPlayerCollided(box1, box2) {
+    //collision region
+    let pLeftX = player.x;
+    let pRightX = player.x + player.size;
+
+    const e1CrashRightX = e1.x + e1.size;
+    const e2CrashRightX = e2.x + e2.size;
+    const e3CrashRightX = e3.x + e3.size;
+
+    let e1BottomY = e1.y + e1.size;
+    let e2BottomY = e2.y + e2.size;
+    let e3BottomY = e3.y + e3.size;
+
+    const crashTopY = player.y;
+    const crashBottomY = player.y + player.size; //player & enemy have same size
+
+    //Crash between e1 & player condition:
+    if((pRightX > e1.x && pRightX < e1CrashRightX) && (e1BottomY > crashTopY && e1BottomY < crashBottomY)
+      || (pLeftX > e1.x && pLeftX < e1CrashRightX) && (e1.y > crashTopY && e1.y < crashBottomY)) {
+        crash = true;
+    }
+    if((pRightX > e2.x && pRightX < e2CrashRightX) && (e2BottomY > crashTopY && e2BottomY < crashBottomY)
+      || (pLeftX > e2.x && pLeftX < e2CrashRightX) && (e2.y > crashTopY && e2.y < crashBottomY)) {
+        crash = true;
+    }
+    if((pRightX > e3.x && pRightX < e3CrashRightX) && (e3BottomY > crashTopY && e3BottomY < crashBottomY)
+      || (pLeftX > e3.x && pLeftX < e3CrashRightX) && (e3.y > crashTopY && e3.y < crashBottomY)) {
+        crash = true;
+    }
+    return crash;
+}
+
 //adding some game event:
 canvas.addEventListener('mousedown', () => {
     player.moving = true;
@@ -80,16 +116,23 @@ canvas.addEventListener('mouseup', () => {
 });
 
 function gameLoop() {
-    //console.log("log update")
+    if(!gameOn) {
+        return;
+    }
     CTX.clearRect(0, 0, 450, 500);
-    e1.move();
-    e2.move();
-    e3.move();
-    player.move();
     drawBox(player);
     drawBox(e1);
     drawBox(e2);
     drawBox(e3);
+    e1.move();
+    e2.move();
+    e3.move();
+    player.move();
+    if(isPlayerCollided(e1, player) || isPlayerCollided(e2, player)|| isPlayerCollided(e3, player)) {
+        gameOn = false;
+        alert("Game Over!");
+        //add restart option here.
+    }
     window.requestAnimationFrame(gameLoop);
 }
 
