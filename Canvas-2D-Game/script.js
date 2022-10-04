@@ -2,7 +2,6 @@ const canvas = document.getElementById("canvasPlayground");
 const CTX = canvas.getContext('2d');
 
 let gameOn = true;
-let crash  = false;
 
 //Draw the game component.
 class Box {
@@ -28,7 +27,7 @@ class Player extends Box {
         if (this.moving) {
             this.x += this.speed;
         }
-        if (this.x + this.size >= 445) {
+        if (this.x + this.size >= 495) {
             //at the canvas right end make the player box bounce back by making speed negative.
             this.speed = -(Math.abs(this.speed));
         }
@@ -65,9 +64,9 @@ let player = new Player();
 let e1 = new Enemy(6);
 let e2 = new Enemy(5);
 let e3 = new Enemy(7);
-e1.x = 80;
-e2.x = 200;
-e3.x = 320;
+e1.x = 85;
+e2.x = 225;
+e3.x = 365;
 
 function drawBox(box) {
     CTX.fillStyle = box.color;
@@ -77,34 +76,27 @@ function drawBox(box) {
 //detect collision:
 function isPlayerCollided(box1, box2) {
     //collision region
-    let pLeftX = player.x;
-    let pRightX = player.x + player.size;
+    let pLeft = box2.x;
+    let pRight = box2.x + box2.size;
+    let pTop = box2.y;
+    let pBottom = box2.y + box2.size; //player & enemy have same size
 
-    const e1CrashRightX = e1.x + e1.size;
-    const e2CrashRightX = e2.x + e2.size;
-    const e3CrashRightX = e3.x + e3.size;
+    let eLeft = box1.x;
+    let eRight = box1.x + box1.size;
+    let eTop = box1.y;
+    let eBottom = box1.y + box1.size;
 
-    let e1BottomY = e1.y + e1.size;
-    let e2BottomY = e2.y + e2.size;
-    let e3BottomY = e3.y + e3.size;
+    //Crash between enemy & player condition: overlapping occurs in this case.
+    // if((pRight > eLeft && pRight < eRight) && (eBottom > pTop && eBottom < pBottom)
+    //   || (pLeft > eLeft && pLeft < eRight) && (eTop > pTop && eTop < pBottom)) {
+    //     return true;
+    // }
 
-    const crashTopY = player.y;
-    const crashBottomY = player.y + player.size; //player & enemy have same size
-
-    //Crash between e1 & player condition:
-    if((pRightX > e1.x && pRightX < e1CrashRightX) && (e1BottomY > crashTopY && e1BottomY < crashBottomY)
-      || (pLeftX > e1.x && pLeftX < e1CrashRightX) && (e1.y > crashTopY && e1.y < crashBottomY)) {
-        crash = true;
+    //condition for no crash between player and enemy: no overlapping here.
+    if((pTop > eBottom) || (pBottom < eTop) || (pLeft > eRight) || (pRight < eLeft)) {
+        return false;
     }
-    if((pRightX > e2.x && pRightX < e2CrashRightX) && (e2BottomY > crashTopY && e2BottomY < crashBottomY)
-      || (pLeftX > e2.x && pLeftX < e2CrashRightX) && (e2.y > crashTopY && e2.y < crashBottomY)) {
-        crash = true;
-    }
-    if((pRightX > e3.x && pRightX < e3CrashRightX) && (e3BottomY > crashTopY && e3BottomY < crashBottomY)
-      || (pLeftX > e3.x && pLeftX < e3CrashRightX) && (e3.y > crashTopY && e3.y < crashBottomY)) {
-        crash = true;
-    }
-    return crash;
+    return true;
 }
 
 //adding some game event:
@@ -119,7 +111,7 @@ function gameLoop() {
     if(!gameOn) {
         return;
     }
-    CTX.clearRect(0, 0, 450, 500);
+    CTX.clearRect(0, 0, 500, 500);
     drawBox(player);
     drawBox(e1);
     drawBox(e2);
